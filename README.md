@@ -10,4 +10,6 @@ See: https://developer.paypal.com/braintree/docs/start/overview
 
 Run amp-braintree.php and try credit card number 2223000048400011 with any future expiry date and CVV. With the amp-form component included on the page, the specified event listener for Braintree's tokenisation of the payment data does not run at all.
 
+As per line 153, the console should log a clear message if the event listener fires, but at present lines 151 to 190 are not being invoked at all.
+
 The page utilises Braintree's [Hosted Fields solution](https://developer.paypal.com/braintree/docs/start/hosted-fields), also including PayPal option and a 3DS component for card security.
