@@ -152,40 +152,40 @@ $gateway = new \Braintree\Gateway([
             e.preventDefault();
             console.log('Listener fired.');
 
-            if (document.querySelector('input[name="method"]').value != 'paypal') {
-              hostedFields.tokenize(function (tokenizeErr, payload) {
-                if (tokenizeErr) {
-                  console.log('Please check your card details. We received this error message from our payment processor: ' + tokenizeErr.message);
-                  return;
+            hostedFields.tokenize(function (tokenizeErr, payload) {
+              if (tokenizeErr) {
+                console.log('Please check your card details. We received this error message from our payment processor: ' + tokenizeErr.message);
+                return;
+              }
+
+              threeDSObj = {
+                nonce: payload.nonce,
+                bin: payload.details.bin,
+                onLookupComplete: function (data, next) {
+                  // Use data here, then call next()
+                  next();
+                }
+              };
+
+              threeDSecure.verifyCard(threeDSObj, function (err, response) {
+                if (err) {
+                  console.log('There was an error authorising your payment. Please double-check your billing and payment details, then attempt to check out again.');
+                  return false;
                 }
 
-                threeDSObj = {
-                  nonce: payload.nonce,
-                  bin: payload.details.bin,
-                  onLookupComplete: function (data, next) {
-                    // Use data here, then call next()
-                    next();
-                  }
-                };
+                // If eligible for 3DS, check it didn't fail
+                if (response.liabilityShiftPossible && !response.liabilityShifted) {
+                  console.log('Security check failed. Please try again, or choose a different payment method.');
+                  return false;
+                }
 
-                threeDSecure.verifyCard(threeDSObj, function (err, response) {
-                  if (err) {
-                    console.log('There was an error authorising your payment. Please double-check your billing and payment details, then attempt to check out again.');
-                    return false;
-                  }
-
-                  // If eligible for 3DS, check it didn't fail
-                  if (response.liabilityShiftPossible && !response.liabilityShifted) {
-                    console.log('Security check failed. Please try again, or choose a different payment method.');
-                    return false;
-                  }
-
-                  // Success! Submit the form
-                  document.querySelector('input[name="nonce"]').value = response.nonce;
-                });
-
+                // Success! Set the nonce in the hidden field
+                document.querySelector('input[name="nonce"]').value = response.nonce;
               });
-            }
+
+            });
+            
+            // Submit the form
             methodForm.submit();
           });
         });
