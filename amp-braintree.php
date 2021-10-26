@@ -10,7 +10,7 @@ if (!empty($_POST)) {
   exit;
 }
 
-require_once('/var/www/vendor/autoload.php');
+require_once('vendor/autoload.php');
 
 $gateway = new \Braintree\Gateway([
   'environment' => 'sandbox',
